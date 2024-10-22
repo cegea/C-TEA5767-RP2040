@@ -11,9 +11,9 @@
  * INCLUDES
  ************************************/
 #include <stdio.h>
-#include "pico/stdlib.h"
+#include <tea5767_i2c.h>
+#include <pico/stdlib.h>
 #include <hardware/gpio.h>
-#include "tea5767_i2c/tea5767_i2c.h"
 
 /************************************
  * PRIVATE MACROS AND DEFINES
@@ -27,6 +27,11 @@ void dummy_blink(int led_pin){
     sleep_ms(500);
     gpio_put(led_pin,0);
     sleep_ms(500);
+}
+
+int gpio_callback(void);
+int gpio_callback(){
+    return 0;
 }
 
 int main(){    
@@ -48,7 +53,7 @@ int main(){
 
     TEA5757_t radio = tea5767_init();
     
-    encState = (gpio_get(CLK_PIN) << 4) | gpio_get(DT_PIN);
+    int encState = (gpio_get(CLK_PIN) << 4) | gpio_get(DT_PIN);
 
     sleep_ms(5000);
     // Clear terminal 
