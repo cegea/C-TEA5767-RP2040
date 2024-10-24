@@ -12,7 +12,9 @@
  ************************************/
 #include <stdio.h>
 #include <tea5767_i2c.h>
+#ifdef PICO
 #include <pico/stdlib.h>
+#endif
 
 /************************************
  * PRIVATE MACROS AND DEFINES

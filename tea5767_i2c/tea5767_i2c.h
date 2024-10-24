@@ -13,9 +13,11 @@
 /************************************
  * INCLUDES
  ************************************/
+#ifdef PICO
 #include <hardware/i2c.h>
 #include <hardware/gpio.h>
 #include "pico/binary_info.h"
+#endif
 /************************************
  * MACROS AND DEFINES
  ************************************/
