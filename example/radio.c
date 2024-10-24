@@ -29,9 +29,8 @@ void dummy_blink(int led_pin){
     sleep_ms(500);
 }
 
-int gpio_callback(void);
-int gpio_callback(){
-    return 0;
+void gpio_callback(uint /*gpio*/, uint32_t /*event_mask*/) {
+    ;;
 }
 
 int main(){    
