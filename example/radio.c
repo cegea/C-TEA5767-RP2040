@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <tea5767_i2c.h>
 #include <pico/stdlib.h>
-#include <hardware/gpio.h>
 
 /************************************
  * PRIVATE MACROS AND DEFINES

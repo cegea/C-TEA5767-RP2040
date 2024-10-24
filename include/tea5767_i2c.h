@@ -13,8 +13,9 @@
 /************************************
  * INCLUDES
  ************************************/
-#include "hardware/i2c.h"
-
+#include <hardware/i2c.h>
+#include <hardware/gpio.h>
+#include "pico/binary_info.h"
 /************************************
  * MACROS AND DEFINES
  ************************************/

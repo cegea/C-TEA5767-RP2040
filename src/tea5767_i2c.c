@@ -10,10 +10,9 @@
 /************************************
  * INCLUDES
  ************************************/
-#include <hardware/gpio.h>
-#include "pico/binary_info.h"
-#include "hardware/i2c.h"
+
 #include "tea5767_i2c.h"
+
 
 /************************************
  * EXTERN VARIABLES
