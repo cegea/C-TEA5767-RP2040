@@ -51,7 +51,9 @@ int main(){
     gpio_set_irq_enabled_with_callback(CLK_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled(DT_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
 
-    TEA5757_t radio = tea5767_init();
+    // Create the radio device and initialize it
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
     
     int encState = (gpio_get(CLK_PIN) << 4) | gpio_get(DT_PIN);
 
@@ -60,22 +62,22 @@ int main(){
     printf("\e[1;1H\e[2J");
     sleep_ms(500);
     
-    tea5767_setStation(&radio,100.7);
+    tea5767_setStation(100.7);
     while(true){
         
         //tea5767_unmute();
-        tea5767_setMuteLeft(&radio,false);
-        tea5767_setMuteRight(&radio,true);
+        tea5767_setMuteLeft(false);
+        tea5767_setMuteRight(true);
          sleep_ms(5000);
         // Clear terminal 
         //printf("\e[1;1H\e[2J");
         tea5767_getStation(&radio);
         dummy_blink(DUMY_LED_PIN);
         //printf("Station: %.2f\n",radio.frequency);
-        //tea5767_setStation(&radio,101.7);
-        //tea5767_setStationInc(&radio,-2.0);
-        tea5767_setMuteLeft(&radio,true);
-        tea5767_setMuteRight(&radio,false);
+        //tea5767_setStation(101.7);
+        //tea5767_setStationInc(-2.0);
+        tea5767_setMuteLeft(true);
+        tea5767_setMuteRight(false);
         sleep_ms(2000);
     }
     return 0;
