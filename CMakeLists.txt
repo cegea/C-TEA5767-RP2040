@@ -37,6 +37,7 @@ if(BUILD_TARGET EQUAL 0)
 endif()
 
 if(BUILD_TARGET EQUAL 2)
+    enable_testing()
     # Testing framework
     add_subdirectory(test)
     # UUT
