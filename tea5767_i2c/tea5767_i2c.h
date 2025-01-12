@@ -66,6 +66,22 @@ float frequency;                // Frequency in MHz
 /************************************
  * EXPORTED VARIABLES
  ************************************/
+static const TEA5757_t default_cfg = {
+    .address = 0x60,
+    .mute_mode = false,
+    .searchMode = false,
+    .frequency = 102.7,
+    .searchUpDown = 1,
+    .searchLevel = ADC_HIGH,
+    .stereoMode = true,
+    .muteLmode = false,
+    .muteRmode = false,
+    .standby = false,
+    .band_mode = EU_BAND,
+    .softMuteMode = false,
+    .hpfMode = true,
+    .stereoNoiseCancelling = true
+};
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
