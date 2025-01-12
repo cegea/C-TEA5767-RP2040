@@ -13,7 +13,6 @@
 
 #include "tea5767_i2c.h"
 
-
 /************************************
  * EXTERN VARIABLES
  ************************************/
@@ -76,25 +75,31 @@ float _tea5767_checkFreqLimits(float freq);
  * GLOBAL FUNCTIONS
  ************************************/
 void _tea5767_read_raw(uint8_t *buffer) {
+#ifdef RASPBERRYPI_PICO
     i2c_read_blocking(i2c_default, _radio->address, buffer, TEA5767_REGISTERS, false);
+#elif UNIT_TESTING
+    i2c_read_mockup(_radio->address, buffer, TEA5767_REGISTERS, false);
+#endif
 }
 
-void _tea5767_write_registers() {
+void _tea5767_write_registers()
+{
     uint8_t registers[TEA5767_REGISTERS];
-    // Calculate the frequency value to be written to the TEA5767 register based on the current radio frequency in MHz. 
+    // Calculate the frequency value to be written to the TEA5767 register based on the current radio frequency in MHz.
     // The calculation takes into account the fixed offset of 225kHz and the 4:1 prescaler used by the TEA5767 module.
-    float freq = 4*(_radio->frequency * 1000000 + 225000) / 32768; 
+    float freq = 4 * (_radio->frequency * 1000000 + 225000) / 32768;
     int integer_freq = freq;
     registers[0] = integer_freq >> 8 | _radio->mute_mode << 7 | _radio->searchMode << 6;
     registers[1] = integer_freq & 0xff;
-    registers[2] = _radio->searchUpDown << 7 | _radio->searchLevel << 5 | 1 << 4 | _radio->stereoMode << 3
-            | _radio->muteRmode << 2 | _radio->muteLmode << 1;
+    registers[2] = _radio->searchUpDown << 7 | _radio->searchLevel << 5 | 1 << 4 | _radio->stereoMode << 3 | _radio->muteRmode << 2 | _radio->muteLmode << 1;
     registers[3] = _radio->standby << 6 | _radio->band_mode << 5 | 1 << 4 | _radio->softMuteMode << 3 | _radio->hpfMode << 2;
     registers[3] = registers[3] | _radio->stereoNoiseCancelling << 1;
     registers[4] = 0x00;
+#ifdef RASPBERRYPI_PICO
     i2c_write_blocking(i2c_default, _radio->address, registers, TEA5767_REGISTERS, false);
-    // TODO: Use a timer instead.
-    sleep_ms(100);
+#elif UNIT_TESTING
+    i2c_write_mockup(_radio->address, registers, TEA5767_REGISTERS, false);
+#endif
 }
 
 void tea5767_init(TEA5757_t *radio){
@@ -116,15 +121,6 @@ void tea5767_init(TEA5757_t *radio){
     _radio->softMuteMode = false;
     _radio->hpfMode = true;
     _radio->stereoNoiseCancelling = true;
-
-    // TODO: Allow other pins than I2C0 on the default SDA and SCL pins (4, 5 on a Pico)
-    i2c_init(i2c_default, 400 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-    // Make the I2C pins available to picotool
-    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 
     // Start the radio
     _tea5767_write_registers();

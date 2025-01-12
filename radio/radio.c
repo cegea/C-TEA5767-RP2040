@@ -10,11 +10,9 @@
 /************************************
  * INCLUDES
  ************************************/
-#include <stdio.h>
+#include "pico.h"
 #include <tea5767_i2c.h>
-#ifdef PICO
 #include <pico/stdlib.h>
-#endif
 
 /************************************
  * PRIVATE MACROS AND DEFINES
@@ -37,7 +35,7 @@ void gpio_callback(uint /*gpio*/, uint32_t /*event_mask*/) {
 int main(){    
 
     stdio_init_all();
-    printf("Hello, TEA5757! Reading raw data from registers...\n");
+    stdio_printf("Hello, TEA5757! Reading raw data from registers...\n");
     
     gpio_init(DUMY_LED_PIN);    
     gpio_set_dir(DUMY_LED_PIN, GPIO_OUT);  
@@ -51,6 +49,15 @@ int main(){
     gpio_set_irq_enabled_with_callback(CLK_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled(DT_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
 
+    // TODO: Allow other pins than I2C0 on the default SDA and SCL pins (4, 5 on a Pico)
+    i2c_init(i2c_default, 400 * 1000);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+    // Make the I2C pins available to picotool
+    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
+
     // Create the radio device and initialize it
     TEA5757_t radio = {0};
     tea5767_init(&radio);
@@ -59,7 +66,7 @@ int main(){
 
     sleep_ms(5000);
     // Clear terminal 
-    printf("\e[1;1H\e[2J");
+    stdio_printf("\e[1;1H\e[2J");
     sleep_ms(500);
     
     tea5767_setStation(100.7);

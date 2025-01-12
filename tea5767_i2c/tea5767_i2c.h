@@ -13,10 +13,15 @@
 /************************************
  * INCLUDES
  ************************************/
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#ifdef RASPBERRYPI_PICO
 #include <hardware/i2c.h>
 #include <hardware/gpio.h>
 #include "pico/binary_info.h"
-#ifdef PICO
+#elif UNIT_TESTING
+#include <mockup_i2c.h>
 #endif
 /************************************
  * MACROS AND DEFINES
