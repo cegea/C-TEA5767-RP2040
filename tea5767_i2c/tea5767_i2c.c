@@ -78,7 +78,7 @@ float _tea5767_checkFreqLimits(float freq);
 void _tea5767_read_raw(uint8_t *buffer) {
 #ifdef RASPBERRYPI_PICO
     i2c_read_blocking(i2c_default, _radio->address, buffer, TEA5767_REGISTERS, false);
-#elif UNIT_TESTING
+#else
     i2c_read_mockup(_radio->address, buffer, TEA5767_REGISTERS);
 #endif
 }
@@ -89,16 +89,16 @@ void _tea5767_write_registers()
     // Calculate the frequency value to be written to the TEA5767 register based on the current radio frequency in MHz.
     // The calculation takes into account the fixed offset of 225kHz and the 4:1 prescaler used by the TEA5767 module.
     float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
-    int integer_freq = freq;
-    registers[0] = integer_freq >> 8 | _radio->mute_mode << 7 | _radio->searchMode << 6;
-    registers[1] = integer_freq & 0xff;
+    uint16_t integer_freq = freq;
+    registers[0] = (uint8_t)(integer_freq >> 8) | _radio->mute_mode << 7 | _radio->searchMode << 6;
+    registers[1] = (uint8_t)integer_freq & 0xff;
     registers[2] = _radio->searchUpDown << 7 | _radio->searchLevel << 5 | 1 << 4 | _radio->stereoMode << 3 | _radio->muteRmode << 2 | _radio->muteLmode << 1;
     registers[3] = _radio->standby << 6 | _radio->band_mode << 5 | 1 << 4 | _radio->softMuteMode << 3 | _radio->hpfMode << 2;
     registers[3] = registers[3] | _radio->stereoNoiseCancelling << 1;
     registers[4] = 0x00;
 #ifdef RASPBERRYPI_PICO
     i2c_write_blocking(i2c_default, _radio->address, registers, TEA5767_REGISTERS, false);
-#elif UNIT_TESTING
+#else
     i2c_write_mockup(_radio->address, registers, TEA5767_REGISTERS);
 #endif
 }
@@ -126,14 +126,18 @@ void tea5767_init(TEA5757_t *radio){
 }
 
 float tea5767_getStation() {
-    uint8_t buf[TEA5767_REGISTERS];
+    uint8_t buf[TEA5767_REGISTERS] = {0};
 
     // Read current settings from the TEA5767 module
     _tea5767_read_raw(buf);
 
     // Calculate the current frequency based on the TEA5767's register values
-    float integer_freq = (buf[0] & 0x3f) << 8 | buf[1];
-    _radio->frequency = (integer_freq*32768/4 - 225000) / 1000000;
+    uint16_t integer_freq = (uint16_t)(buf[0] & 0x3f) << 8 | (uint16_t)buf[1];
+    _radio->frequency = ((float)integer_freq*32768.0/4.0 - 225000.0) / 1000000.0;
+
+    // // float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
+    // registers[0] = integer_freq >> 8 | _radio->mute_mode << 7 | _radio->searchMode << 6;
+    // registers[1] = integer_freq & 0xff; 
 
     return _radio->frequency;
 }

@@ -6,7 +6,7 @@ void test_TEA5767_Init(void)
 {
     TEA5757_t radio = {0};
     tea5767_init(&radio);
-
+    
     printf("mute_mode %d \n",radio.mute_mode);
     TEST_ASSERT(radio.mute_mode == default_cfg.mute_mode);
     printf("searchMode %d \n",radio.searchMode);
@@ -33,6 +33,8 @@ void test_TEA5767_Init(void)
     TEST_ASSERT(radio.hpfMode == default_cfg.hpfMode);
     printf("stereoNoiseCancelling %d \n",radio.stereoNoiseCancelling);
     TEST_ASSERT(radio.stereoNoiseCancelling == default_cfg.stereoNoiseCancelling);
+    tea5767_getReady();
+    tea5767_getStation();
 
 }
 
@@ -40,9 +42,18 @@ void test_TEA5767_getStation(void)
 {
     TEA5757_t radio = {0};
     tea5767_init(&radio);
-    tea5767_setStation(101.0);
-    TEST_ASSERT(radio.frequency == 101.0);
-    printf("frequency %f \n",radio.frequency);
+    for (float freq = MIN_FREQ_EU; freq < MAX_FREQ_EU; freq++)
+    {
+        printf("Current frequency %f \n",radio.frequency);
+        printf("Current frequency %f \n",tea5767_getStation());
+        tea5767_setStation(freq);
+        printf("Current frequency %f \n",radio.frequency);
+        printf("Current frequency %f \n",tea5767_getStation());
+        TEST_ASSERT(radio.frequency == freq);
+        printf("Target frequency %f \n",freq);
+        TEST_ASSERT(tea5767_getStation() == freq);
+    }
+    
     // TEST_ASSERT(radio.frequency == default_cfg.frequency);
 }
 

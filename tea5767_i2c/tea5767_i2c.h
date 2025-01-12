@@ -20,7 +20,7 @@
 #include <hardware/i2c.h>
 #include <hardware/gpio.h>
 #include "pico/binary_info.h"
-#elif UNIT_TESTING
+#else
 #include <tea5767_i2c_mockup.h>
 #endif
 /************************************
