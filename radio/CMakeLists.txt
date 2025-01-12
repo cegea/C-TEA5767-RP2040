@@ -50,23 +50,3 @@ if(BUILD_TARGET EQUAL 1)
         hardware_gpio
     )
 endif()
-
-if(BUILD_TARGET EQUAL 2)
-    set(This "libApp")
-
-    set(Headers
-        # put the header files you need for testing here
-    )
-    set(Sources
-        # put the source files of your productive code here
-    )
-
-    add_library(${This} STATIC ${Sources}) # this is to build a library for testing
-    target_include_directories(${This} PUBLIC "../include")
-
-    target_link_libraries(
-        ${This} PUBLIC
-        # put additional libraries here
-    )
-
-endif()

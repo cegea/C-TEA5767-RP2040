@@ -1,26 +1,19 @@
-cmake_minimum_required(VERSION 3.14)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_EXTENSIONS ON)
+project(tea5767_i2c_driver_app DESCRIPTION "Testing framework")
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        bf66935e07825318ae519675d73d0f3e313b3ec6 
-)
-FetchContent_MakeAvailable(googletest)
+# find_library(tea5767_i2c_driver tea5767_i2c_driver PATHS "${CMAKE_SOURCE_DIR}/../build/src" NO_DEFAULT_PATH)
 
-project(tea5767_i2c_driver_test DESCRIPTION "Testing framework")
+# if(NOT tea5767_i2c_driver)
+#     message(FATAL_ERROR "No se encontró la biblioteca tea5767_i2c_driver en ../build")
+# endif()
 
-find_library(tea5767_i2c_driver tea5767_i2c_driver PATHS "${CMAKE_SOURCE_DIR}/../build/src" NO_DEFAULT_PATH)
+add_subdirectory(tea5767_i2c_mockup)
 
-if(NOT tea5767_i2c_driver)
-    message(FATAL_ERROR "No se encontró la biblioteca tea5767_i2c_driver en ../build")
-endif()
+add_executable(tea5767_i2c_driver_app tea5767_i2c_test.c)
 
-add_executable(tea5767_i2c_driver_test tea5767_i2c_test.cpp)
+target_link_libraries(tea5767_i2c_driver_app 
+tea5767_i2c_mockup
+tea5767_i2c_driver 
+unity) 
 
-target_link_libraries(tea5767_i2c_driver_test gtest_main gmock_main tea5767_i2c_driver) 
+add_test(tea5767_i2c_driver_test tea5767_i2c_driver_app)
 
-include(GoogleTest)
-gtest_discover_tests(tea5767_i2c_driver_test)

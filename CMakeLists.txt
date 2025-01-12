@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 14)
 # BUILD_Target == 0 ==> pico
 # BUILD_Target == 2 ==> test
-set(BUILD_TARGET 0)
+set(BUILD_TARGET 2)
 set(PICO_SDK_FETCH_FROM_GIT on)
 set(PICO_SDK_FETCH_FROM_GIT_TAG 1.5.1) 
 
@@ -37,20 +37,14 @@ if(BUILD_TARGET EQUAL 0)
 endif()
 
 if(BUILD_TARGET EQUAL 2)
+    # Testing framework
     add_subdirectory(test)
-    add_subdirectory(googletest)
-    add_definitions(-DTEST)
-    add_subdirectory(src) # Will add the library tea5767_i2c
-    add_subdirectory(radio)
+    # UUT
+    add_definitions(-DUNIT_TESTING)
+    add_subdirectory(tea5767_i2c) # Will add the library tea5767_i2c
+    # Uniti does not have a CMakeLists.txt to build tests. 
+    add_library(unity STATIC Unity/src/unity.c)   
+    target_include_directories(unity PUBLIC Unity/src)
 endif()
 
-# add_executable(${PROJECT_NAME} example/radio.c)
-# add_subdirectory(test) # Will add the library tea5767_i2cz
-
-# target_link_libraries(${PROJECT_NAME} tea5767_i2c_driver pico_stdlib hardware_gpio)
-
-# target_link_libraries(${PROJECT_NAME} tea5767_i2c)
-
-# create map/bin/hex/uf2 file in addition to ELF.
-# pico_add_extra_outputs(${PROJECT_NAME})
 
