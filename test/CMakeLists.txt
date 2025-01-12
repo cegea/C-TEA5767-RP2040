@@ -9,14 +9,24 @@ project(tea5767_i2c_test DESCRIPTION "Testing framework")
 add_subdirectory(tea5767_i2c_mockup)
 
 add_executable(tea5767_i2c_test tea5767_i2c_test.c)
+add_executable(tea5767_i2c_test_mockup tea5767_i2c_test_mockup.c)
 
 target_link_libraries(tea5767_i2c_test 
 tea5767_i2c_mockup
 tea5767_i2c_driver 
 unity) 
 
+target_link_libraries(tea5767_i2c_test_mockup 
+tea5767_i2c_mockup 
+unity) 
+
 add_test(
     NAME tea5767_i2c_test 
     COMMAND $<TARGET_FILE:tea5767_i2c_test>
+)
+
+add_test(
+    NAME tea5767_i2c_test_mockup 
+    COMMAND $<TARGET_FILE:tea5767_i2c_test_mockup>
 )
 
