@@ -12,6 +12,7 @@
  ************************************/
 
 #include "tea5767_i2c.h"
+#include <string.h> 
 
 /************************************
  * EXTERN VARIABLES
@@ -78,7 +79,7 @@ void _tea5767_read_raw(uint8_t *buffer) {
 #ifdef RASPBERRYPI_PICO
     i2c_read_blocking(i2c_default, _radio->address, buffer, TEA5767_REGISTERS, false);
 #elif UNIT_TESTING
-    i2c_read_mockup(_radio->address, buffer, TEA5767_REGISTERS, false);
+    i2c_read_mockup(_radio->address, buffer, TEA5767_REGISTERS);
 #endif
 }
 
@@ -87,7 +88,7 @@ void _tea5767_write_registers()
     uint8_t registers[TEA5767_REGISTERS];
     // Calculate the frequency value to be written to the TEA5767 register based on the current radio frequency in MHz.
     // The calculation takes into account the fixed offset of 225kHz and the 4:1 prescaler used by the TEA5767 module.
-    float freq = 4 * (_radio->frequency * 1000000 + 225000) / 32768;
+    float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
     int integer_freq = freq;
     registers[0] = integer_freq >> 8 | _radio->mute_mode << 7 | _radio->searchMode << 6;
     registers[1] = integer_freq & 0xff;
@@ -98,29 +99,27 @@ void _tea5767_write_registers()
 #ifdef RASPBERRYPI_PICO
     i2c_write_blocking(i2c_default, _radio->address, registers, TEA5767_REGISTERS, false);
 #elif UNIT_TESTING
-    i2c_write_mockup(_radio->address, registers, TEA5767_REGISTERS, false);
+    i2c_write_mockup(_radio->address, registers, TEA5767_REGISTERS);
 #endif
 }
 
 void tea5767_init(TEA5757_t *radio){
     _radio = radio;
-    _radio->address = 0x60;
-    // Default (See datasheet).
-    //buf[0] = 0x40;buf[1] = 0x00;buf[2] = 0x90;buf[3] = 0x1E;buf[4] = 0x00;
-
-    _radio->mute_mode = false;
-    _radio->searchMode = false;
-    _radio->frequency = 102.7;
-    _radio->searchUpDown = 1;
-    _radio->searchLevel = ADC_HIGH;
-    _radio->stereoMode = true;
-    _radio->muteLmode = false;
-    _radio->muteRmode = false;
-    _radio->standby = false;
-    _radio->band_mode = EU_BAND;
-    _radio->softMuteMode = false;
-    _radio->hpfMode = true;
-    _radio->stereoNoiseCancelling = true;
+    *_radio = default_cfg;
+    // _radio->address = default_cfg.address;
+    // _radio->mute_mode = default_cfg.mute_mode;
+    // _radio->searchMode = default_cfg.searchMode;
+    // _radio->frequency = default_cfg.frequency;
+    // _radio->searchUpDown = default_cfg.searchUpDown;
+    // _radio->searchLevel = default_cfg.searchLevel;
+    // _radio->stereoMode = default_cfg.stereoMode;
+    // _radio->muteLmode = default_cfg.muteLmode;
+    // _radio->muteRmode = default_cfg.muteRmode;
+    // _radio->standby = default_cfg.standby;
+    // _radio->band_mode = default_cfg.band_mode;
+    // _radio->softMuteMode = default_cfg.softMuteMode;
+    // _radio->hpfMode = default_cfg.hpfMode;
+    // _radio->stereoNoiseCancelling = default_cfg.stereoNoiseCancelling;
 
     // Start the radio
     _tea5767_write_registers();
