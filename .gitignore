@@ -54,3 +54,4 @@ build/
 
 # VS Cocde
 .vscode/
+.cache/
