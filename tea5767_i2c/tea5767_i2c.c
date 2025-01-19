@@ -12,6 +12,8 @@
  ************************************/
 
 #include "tea5767_i2c.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 /************************************
  * EXTERN VARIABLES
@@ -24,6 +26,48 @@
 /************************************
  * PRIVATE TYPEDEFS
  ************************************/
+typedef struct
+{
+    // 1st & 2nd byte
+    bool mute;
+    bool searchModeEnabled;
+    uint16_t pll;
+    // 3th byte
+    bool searchDownUp;
+    uint8_t searchStopLevel;
+    bool hlsi;
+    bool monoToStereo;
+    bool muteR;
+    bool muteL;
+    bool swp1;
+    // 4th byte
+    bool swp2;
+    bool standy;
+    bool bandLimits;
+    bool xtal;
+    bool softMute;
+    bool hcc;
+    bool stereoNoiseCancelling;
+    bool searchIndicator;
+    // 5th byte
+    bool pllref;
+    bool dtc;
+}_write_registers;
+
+typedef struct
+{
+    // 1st & 2nd byte
+    bool ready;
+    bool bandLimitsFlag;
+    uint16_t pll;
+    // 3th byte
+    bool stereo;
+    uint8_t ifCounter;
+    // 4th byte
+    uint8_t adcLevelOutput;
+    uint8_t tea5737ID;
+    // 5th byte RFU (See datasheet)
+}_read_registers;
 
 /************************************
  * STATIC VARIABLES
