@@ -26,48 +26,7 @@
 /************************************
  * PRIVATE TYPEDEFS
  ************************************/
-typedef struct
-{
-    // 1st & 2nd byte
-    bool mute;
-    bool searchModeEnabled;
-    uint16_t pll;
-    // 3th byte
-    bool searchDownUp;
-    uint8_t searchStopLevel;
-    bool hlsi;
-    bool monoToStereo;
-    bool muteR;
-    bool muteL;
-    bool swp1;
-    // 4th byte
-    bool swp2;
-    bool standy;
-    bool bandLimits;
-    bool xtal;
-    bool softMute;
-    bool hcc;
-    bool stereoNoiseCancelling;
-    bool searchIndicator;
-    // 5th byte
-    bool pllref;
-    bool dtc;
-}_write_registers;
 
-typedef struct
-{
-    // 1st & 2nd byte
-    bool ready;
-    bool bandLimitsFlag;
-    uint16_t pll;
-    // 3th byte
-    bool stereo;
-    uint8_t ifCounter;
-    // 4th byte
-    uint8_t adcLevelOutput;
-    uint8_t tea5737ID;
-    // 5th byte RFU (See datasheet)
-}_read_registers;
 
 /************************************
  * STATIC VARIABLES
@@ -94,7 +53,7 @@ static TEA5757_t *_radio = NULL;
  * \param radio From type TEA5767_t.
  * \param buffer \ref TEA5767_REGISTERS amount to this variable.
  */
-void _tea5767_read_raw(uint8_t *buffer);
+void _tea5767_read_registers(void);
 
 /*! \brief   Writes all five bytes from TEA5767 with format.
  *  \ingroup tea5767_i2c
@@ -118,12 +77,25 @@ float _tea5767_checkFreqLimits(float freq);
 /************************************
  * GLOBAL FUNCTIONS
  ************************************/
-void _tea5767_read_raw(uint8_t *buffer) {
+void _tea5767_read_registers() {
+    uint8_t registers[TEA5767_REGISTERS] = {0};
 #ifdef RASPBERRYPI_PICO
     i2c_read_blocking(i2c_default, _radio->address, buffer, TEA5767_REGISTERS, false);
 #else
-    i2c_read_mockup(_radio->address, buffer, TEA5767_REGISTERS);
+    i2c_read_mockup(_radio->address, registers, TEA5767_REGISTERS);
 #endif
+    _radio->read.ready = registers[0] >> 7;
+    _radio->read.bandLimitsFlag = registers[0] >> 6;
+    _radio->read.pll = ((uint16_t)(registers[0] & 0x3f) << 8) + (uint16_t)registers[1];
+    _radio->read.stereo = registers[2] >> 7;
+    _radio->read.ifCounter = registers[2] & 0x7f;
+    _radio->read.adcLevelOutput = registers[3] >> 4;
+    _radio->read.tea5737ID = (registers[3] & 0x0e) >> 1;
+
+    // Translate data to static struct
+    _radio->isReady = _radio->read.ready;
+    _radio->isStereo = _radio->read.stereo;
+    _radio->frequency = ((float)_radio->read.pll*32768.0/4.0 - 225000.0) / 1000000.0;
 }
 
 void _tea5767_write_registers()
@@ -169,10 +141,9 @@ void tea5767_init(TEA5757_t *radio){
 }
 
 float tea5767_getStation() {
-    uint8_t buf[TEA5767_REGISTERS] = {0};
 
     // Read current settings from the TEA5767 module
-    _tea5767_read_raw(buf);
+    _tea5767_read_registers();
 
     // Calculate the current frequency based on the TEA5767's register values
     uint16_t integer_freq = (uint16_t)(buf[0] & 0x3f) << 8 | (uint16_t)buf[1];
@@ -186,8 +157,7 @@ float tea5767_getStation() {
 }
 
 int tea5767_getReady() {
-    uint8_t buf[TEA5767_REGISTERS];
-    _tea5767_read_raw(buf);
+    _tea5767_read_registers();
     _radio->isReady = buf[0] >> 7;
     return _radio->isReady;
 }

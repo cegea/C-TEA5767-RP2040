@@ -41,10 +41,59 @@
 /************************************
  * TYPEDEFS
  ************************************/
+ /*! @brief The TEA5757 radio module write configuration structure
+*/
+ typedef struct
+{
+    // 1st & 2nd byte
+    bool mute;
+    bool searchModeEnabled;
+    uint16_t pll;
+    // 3th byte
+    bool searchDownUp;
+    uint8_t searchStopLevel;
+    bool hlsi;
+    bool monoToStereo;
+    bool muteR;
+    bool muteL;
+    bool swp1;
+    // 4th byte
+    bool swp2;
+    bool standy;
+    bool bandLimits;
+    bool xtal;
+    bool softMute;
+    bool hcc;
+    bool stereoNoiseCancelling;
+    bool searchIndicator;
+    // 5th byte
+    bool pllref;
+    bool dtc;
+}_write_registers;
+
+/*! @brief The TEA5757 radio module read configuration structure
+*/
+typedef struct
+{
+    // 1st & 2nd byte
+    bool ready;
+    bool bandLimitsFlag;
+    uint16_t pll;
+    // 3th byte
+    bool stereo;
+    uint8_t ifCounter;
+    // 4th byte
+    uint8_t adcLevelOutput;
+    uint8_t tea5737ID;
+    // 5th byte RFU (See datasheet)
+}_read_registers;
+
 /*! @brief The TEA5757 radio module configuration structure
 */
 typedef struct {
 uint8_t address;                //< I2C device address
+_write_registers write;         // Data write structure
+_read_registers read;           // Data reda structure
 uint8_t mute_mode;              //< Audio mute mode
 uint8_t band_mode;              //< Frequency band mode
 uint8_t standby;                // Standby mode
