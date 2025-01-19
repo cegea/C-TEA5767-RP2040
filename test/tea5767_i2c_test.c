@@ -49,6 +49,48 @@ void test_TEA5767_getStation(void)
     }
 }
 
+void test_TEA5767_getReady(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+
+}
+
+void test_TEA5767_setSearch(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+    
+}
+
+void test_TEA5767_setStation(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+    
+}
+
+void test_TEA5767_setMute(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+    
+}
+
+void test_TEA5767_setStadby(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+    
+}
+
+void test_TEA5767_setStereo(void)
+{
+    TEA5757_t radio = {0};
+    tea5767_init(&radio);
+    
+}
+
 void setUp(void)
 {
 }
