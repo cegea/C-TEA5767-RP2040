@@ -121,20 +121,6 @@ void _tea5767_write_registers()
 void tea5767_init(TEA5757_t *radio){
     _radio = radio;
     *_radio = default_cfg;
-    // _radio->address = default_cfg.address;
-    // _radio->mute_mode = default_cfg.mute_mode;
-    // _radio->searchMode = default_cfg.searchMode;
-    // _radio->frequency = default_cfg.frequency;
-    // _radio->searchUpDown = default_cfg.searchUpDown;
-    // _radio->searchLevel = default_cfg.searchLevel;
-    // _radio->stereoMode = default_cfg.stereoMode;
-    // _radio->muteLmode = default_cfg.muteLmode;
-    // _radio->muteRmode = default_cfg.muteRmode;
-    // _radio->standby = default_cfg.standby;
-    // _radio->band_mode = default_cfg.band_mode;
-    // _radio->softMuteMode = default_cfg.softMuteMode;
-    // _radio->hpfMode = default_cfg.hpfMode;
-    // _radio->stereoNoiseCancelling = default_cfg.stereoNoiseCancelling;
 
     // Start the radio
     _tea5767_write_registers();
@@ -144,21 +130,11 @@ float tea5767_getStation() {
 
     // Read current settings from the TEA5767 module
     _tea5767_read_registers();
-
-    // Calculate the current frequency based on the TEA5767's register values
-    uint16_t integer_freq = (uint16_t)(buf[0] & 0x3f) << 8 | (uint16_t)buf[1];
-    _radio->frequency = ((float)integer_freq*32768.0/4.0 - 225000.0) / 1000000.0;
-
-    // // float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
-    // registers[0] = integer_freq >> 8 | _radio->mute_mode << 7 | _radio->searchMode << 6;
-    // registers[1] = integer_freq & 0xff; 
-
     return _radio->frequency;
 }
 
 int tea5767_getReady() {
     _tea5767_read_registers();
-    _radio->isReady = buf[0] >> 7;
     return _radio->isReady;
 }
 
