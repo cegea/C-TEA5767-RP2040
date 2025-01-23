@@ -10,10 +10,8 @@
 /************************************
  * INCLUDES
  ************************************/
-
 #include "tea5767_i2c.h"
 #include <stdbool.h>
-#include <stdint.h>
 
 /************************************
  * EXTERN VARIABLES
@@ -92,25 +90,29 @@ void _tea5767_read_registers() {
     _radio->read.adcLevelOutput = registers[3] >> 4;
     _radio->read.tea5737ID = (registers[3] & 0x0e) >> 1;
 
-    // Translate data to static struct
-    _radio->isReady = _radio->read.ready;
-    _radio->isStereo = _radio->read.stereo;
     _radio->frequency = ((float)_radio->read.pll*32768.0/4.0 - 225000.0) / 1000000.0;
 }
 
 void _tea5767_write_registers()
 {
-    uint8_t registers[TEA5767_REGISTERS];
+    uint8_t registers[TEA5767_REGISTERS] = {0};
     // Calculate the frequency value to be written to the TEA5767 register based on the current radio frequency in MHz.
     // The calculation takes into account the fixed offset of 225kHz and the 4:1 prescaler used by the TEA5767 module.
     float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
     uint16_t integer_freq = freq;
-    registers[0] = (uint8_t)(integer_freq >> 8) | _radio->mute_mode << 7 | _radio->searchMode << 6;
-    registers[1] = (uint8_t)integer_freq & 0xff;
-    registers[2] = _radio->searchUpDown << 7 | _radio->searchLevel << 5 | 1 << 4 | _radio->stereoMode << 3 | _radio->muteRmode << 2 | _radio->muteLmode << 1;
-    registers[3] = _radio->standby << 6 | _radio->band_mode << 5 | 1 << 4 | _radio->softMuteMode << 3 | _radio->hpfMode << 2;
-    registers[3] = registers[3] | _radio->stereoNoiseCancelling << 1;
-    registers[4] = 0x00;
+    registers[0] = (uint8_t)(integer_freq >> 8) | _radio->write.mute << 7 | _radio->write.searchModeEnabled << 6;
+    registers[1] = (uint8_t)(integer_freq & 0xff);
+    registers[2] = _radio->write.searchDownUp << 7;
+    registers[2] |= _radio->write.searchStopLevel << 5 | _radio->write.hlsi << 4;
+    registers[2] |= _radio->write.monoToStereo << 3;
+    registers[2] |= _radio->write.muteR << 2 | _radio->write.muteL << 1 | _radio->write.swp1;
+    registers[3] = _radio->write.swp2 << 7;
+    registers[3] |= _radio->write.standy << 6 | _radio->write.bandLimits << 5;
+    registers[3] |= _radio->write.xtal << 4;
+    registers[3] |= _radio->write.softMute << 3 | _radio->write.hcc << 2;
+    registers[3] |= _radio->write.stereoNoiseCancelling << 1;
+    registers[3] |= _radio->write.searchIndicator;
+    registers[4] = _radio->write.pllref << 7 | _radio->write.dtc << 6;
 #ifdef RASPBERRYPI_PICO
     i2c_write_blocking(i2c_default, _radio->address, registers, TEA5767_REGISTERS, false);
 #else
@@ -121,9 +123,11 @@ void _tea5767_write_registers()
 void tea5767_init(TEA5757_t *radio){
     _radio = radio;
     *_radio = default_cfg;
+    _radio->write = default_write_cfg;
 
     // Start the radio
     _tea5767_write_registers();
+    _tea5767_read_registers();
 }
 
 float tea5767_getStation() {
@@ -133,14 +137,8 @@ float tea5767_getStation() {
     return _radio->frequency;
 }
 
-int tea5767_getReady() {
-    _tea5767_read_registers();
-    return _radio->isReady;
-}
-
-void tea5767_setSearch(uint8_t searchMode, uint8_t searchUpDown) {
-    _radio->searchUpDown = searchUpDown;
-    _radio->searchMode = searchMode;
+void tea5767_setStation(float freq) {
+    _radio->frequency = _tea5767_checkFreqLimits(freq);
     _tea5767_write_registers();
 }
 
@@ -148,37 +146,38 @@ float _tea5767_checkFreqLimits(float freq) {
     float min_freq = MIN_FREQ_EU;
     float max_freq = MAX_FREQ_EU;
 
-    switch (_radio->band_mode) {
-        case JP_BAND:
-            min_freq = MIN_FREQ_JP;
-            max_freq = MAX_FREQ_JP;
-            break;
-
-        case EU_BAND:
-            min_freq = MIN_FREQ_EU;
-            max_freq = MAX_FREQ_EU;
-            break;
-
-        default:
-            return freq;
-            break;
+    if (_radio->write.bandLimits == JP_BAND) {
+        min_freq = MIN_FREQ_JP;
+        max_freq = MAX_FREQ_JP;
+    }
+    else if (_radio->write.bandLimits == EU_BAND) {
+        min_freq = MIN_FREQ_EU;
+        max_freq = MAX_FREQ_EU;
+    }
+    else {
+        return freq;
     }
 
     if (freq > max_freq) {
         freq = max_freq;
-        //printf("Warning: Frequency out of range. Setting to maximum value.\n");
     } else if (freq < min_freq) {
         freq = min_freq;
-        //printf("Warning: Frequency out of range. Setting to minimum value.\n");
     }
 
     return freq;
 }
 
-void tea5767_setStation(float freq) {
-    _radio->frequency = _tea5767_checkFreqLimits(freq);
+bool tea5767_getReady() {
+    _tea5767_read_registers();
+    return _radio->read.ready;
+}
+
+void tea5767_setSearch(bool searchModeEnabled, bool searchUpDown) {
+    _radio->write.searchDownUp = searchUpDown;
+    _radio->write.searchModeEnabled = searchModeEnabled;
     _tea5767_write_registers();
 }
+
 
 void tea5767_setStationInc(float freq) {
     // Set search mode based on sign of freq
@@ -196,28 +195,37 @@ void tea5767_setStationInc(float freq) {
     _tea5767_write_registers();
 }
 
-void tea5767_setMute(bool mute) {
-    _radio->mute_mode = mute;
+void _tea5767_toogleMute(){
+    _radio->write.mute = ~_radio->write.mute;
     _tea5767_write_registers();
 }
 
+void tea5767_setMute() {
+    _tea5767_toogleMute();
+}
+
+void tea5767_unMute() {
+    _tea5767_toogleMute();
+}
+
+
 void tea5767_setMuteLeft(bool mute) {
-    _radio->muteLmode = mute;
+    _radio->write.muteL = mute;
     _tea5767_write_registers();
 }
 
 void tea5767_setMuteRight(bool mute) {
-    _radio->muteRmode = mute;
+    _radio->write.muteR = mute;
     _tea5767_write_registers();
 }
 
 void tea5767_setStandby(bool standby) {
-    _radio->standby = standby;
+    _radio->write.standy = standby;
     _tea5767_write_registers();
 }
 
 void tea5767_setStereo(bool stereo) {
-    _radio->stereoMode = !stereo;
+    _radio->write.monoToStereo = ~stereo;
     _tea5767_write_registers();
 }
 

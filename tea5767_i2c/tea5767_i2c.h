@@ -41,6 +41,14 @@
 /************************************
  * TYPEDEFS
  ************************************/
+ typedef enum{
+    NOT_ALLOWED,
+    LOW_LEVEL,
+    MID_LEVEL,
+    HIGH_LEVEL
+
+ } searchStopLevel_t;
+
  /*! @brief The TEA5757 radio module write configuration structure
 */
  typedef struct
@@ -51,7 +59,7 @@
     uint16_t pll;
     // 3th byte
     bool searchDownUp;
-    uint8_t searchStopLevel;
+    searchStopLevel_t searchStopLevel;
     bool hlsi;
     bool monoToStereo;
     bool muteR;
@@ -60,7 +68,7 @@
     // 4th byte
     bool swp2;
     bool standy;
-    bool bandLimits;
+    uint8_t bandLimits;
     bool xtal;
     bool softMute;
     bool hcc;
@@ -94,42 +102,42 @@ typedef struct {
 uint8_t address;                //< I2C device address
 _write_registers write;         // Data write structure
 _read_registers read;           // Data reda structure
-uint8_t mute_mode;              //< Audio mute mode
-uint8_t band_mode;              //< Frequency band mode
-uint8_t standby;                // Standby mode
-uint8_t searchMode;             // Search mode
-uint8_t searchUpDown;           // Search up-down mode
-uint8_t searchLevel;            // Search level
-uint8_t stereoMode;             // Stereo mode
-uint8_t muteLmode;              // Left channel mute mode
-uint8_t muteRmode;              // Right channel mute mode
-uint8_t stereoNoiseCancelling;  // Stereo noise cancelling mode
-uint8_t softMuteMode;           // Soft mute mode
-uint8_t hpfMode;                // High pass filter mode
-uint8_t isReady;                // Radio is ready flag
-uint8_t isStereo;               // Stereo mode flag
-uint8_t stationLevel;           // Station level
 float frequency;                // Frequency in MHz
 } TEA5757_t;
 
 /************************************
  * EXPORTED VARIABLES
  ************************************/
+static const _write_registers default_write_cfg = {
+    .mute = false,
+    .searchModeEnabled = false,
+    .pll = 0,
+    .searchDownUp = 0,
+    .searchStopLevel = LOW_LEVEL,
+    .hlsi = 0,
+    .monoToStereo = 0,
+    .muteR = 0,
+    .muteL = 0,
+    .swp1 = 0,
+    .swp2 = 0,
+    .standy = 0,
+    .bandLimits = EU_BAND,
+    // 32768 kHz
+    .xtal = 1, 
+    .pllref = 0,
+    ////////////
+    .softMute = 0,
+    .hcc = 0,
+    .stereoNoiseCancelling = 1,
+    .searchIndicator = 0,
+    .dtc = 0
+};
+
 static const TEA5757_t default_cfg = {
     .address = 0x60,
-    .mute_mode = false,
-    .searchMode = false,
-    .frequency = 102.7,
-    .searchUpDown = 1,
-    .searchLevel = ADC_HIGH,
-    .stereoMode = true,
-    .muteLmode = false,
-    .muteRmode = false,
-    .standby = false,
-    .band_mode = EU_BAND,
-    .softMuteMode = false,
-    .hpfMode = true,
-    .stereoNoiseCancelling = true
+    .frequency = MIN_FREQ_EU,
+    .read = {0},
+    .write = {0}
 };
 
 /************************************
@@ -141,29 +149,38 @@ static const TEA5757_t default_cfg = {
 /*! \brief   Initialize an struct with the parameters needed for initialization.
  *  \ingroup tea5767_i2c
  *
- * TO DO
  *
  * \param radio Variable of type TEA5767_t.
  */
 void tea5767_init(TEA5757_t *radio);
 
 /*! @brief Gets the current station frequency from the TEA5757 radio and prints it to stdout.
-* This function reads the raw data from the TEA5757 radio using the _tea5767_read_raw() function,
+* This function reads the raw data from the TEA5757 radio using the _tea5767_read_registers() function,
 * extracts the frequency values from the read buffer, and calculates the frequency in MHz.
 * The extracted frequency is then printed to stdout with two decimal places.
-* @param radio The TEA5757_t structure representing the radio device.
 * @note This function assumes that the TEA5757 radio device has been initialized and is currently powered on.
 * @return void
 */
 float tea5767_getStation();
 
+/*! @brief Sets the frequency of the TEA5757 tuner.
+* This function sets the frequency of the TEA5757 tuner to the given value.
+* If the frequency is out of range for the current band mode, it will be adjusted to the nearest valid frequency.
+* After setting the frequency, the new value will be written to the tuner through the _tea5767_write_registers function.
+* @param radio A pointer to a TEA5757_t structure representing the tuner.
+* @param freq The desired frequency to set the tuner to.
+* @return void
+* @note The tuner must be initialized and ready before calling this function.
+*/
+void tea5767_setStation(float freq);
+
 /*! @brief Initializes the TEA5757_t structure for the TEA5757 tuner.
 * This function initializes the TEA5757_t structure with the default values for the TEA5757 tuner.
 * The default I2C address of the tuner is 0x60.
-* @return TEA5757_t The TEA5757_t structure initialized with default values.
+* @return bool The status of the device.
 * @note This function must be called before using any other function related to the TEA5757 tuner.
 */
-int tea5767_getReady();
+bool tea5767_getReady();
 
 /*! @brief Configures the search mode and direction of the TEA5757 tuner.
 * This function sets the search mode and direction of the TEA5757 tuner. It updates the values of the TEA5757_t structure
@@ -181,18 +198,7 @@ int tea5767_getReady();
 * TEA5767_SEARCH_DOWN
 * @note This function updates the TEA5757_t structure pointed to by radio and writes the updated values to the tuner.
 */
-void tea5767_setSearch(uint8_t searchMode, uint8_t searchUpDown);
-
-/*! @brief Sets the frequency of the TEA5757 tuner.
-* This function sets the frequency of the TEA5757 tuner to the given value.
-* If the frequency is out of range for the current band mode, it will be adjusted to the nearest valid frequency.
-* After setting the frequency, the new value will be written to the tuner through the _tea5767_write_registers function.
-* @param radio A pointer to a TEA5757_t structure representing the tuner.
-* @param freq The desired frequency to set the tuner to.
-* @return void
-* @note The tuner must be initialized and ready before calling this function.
-*/
-void tea5767_setStation(float freq);
+void tea5767_setSearch(bool searchModeEnabled, bool searchUpDown);
 
 /*! @brief Increments the current frequency of the TEA5757 radio by a given value.
 * This function increases the current frequency of the TEA5757 radio by a given value.
@@ -209,11 +215,16 @@ void tea5767_setStationInc(float freq);
 /*! @brief Sets the mute mode of the TEA5757 tuner.
 * This function sets the mute mode of the TEA5757 tuner to the specified value. When mute mode is enabled,
 * the audio output is muted.
-* @param radio A pointer to a TEA5757_t structure representing the tuner.
-* @param mute The desired mute mode value. true to enable mute mode, false to disable it.
 * @note The function _tea5767_write_registers() is called to write the new mute mode value to the tuner.
 */
-void tea5767_setMute(bool mute);
+void tea5767_setMute();
+
+/*! @brief Releases the mute mode of the TEA5757 tuner.
+* This function sets the mute mode of the TEA5757 tuner to the specified value. When mute mode is enabled,
+* the audio output is muted.
+* @note The function _tea5767_write_registers() is called to write the new mute mode value to the tuner.
+*/
+void tea5767_unMute();
 
 /*! @brief Sets the soft mute mode of the TEA5767 radio.
 * This function sets the soft mute mode of the TEA5767 radio to either on or off.
