@@ -161,7 +161,7 @@ void tea5767_init(TEA5757_t *radio);
 * @note This function assumes that the TEA5757 radio device has been initialized and is currently powered on.
 * @return void
 */
-float tea5767_getStation();
+float tea5767_getStation(void);
 
 /*! @brief Sets the frequency of the TEA5757 tuner.
 * This function sets the frequency of the TEA5757 tuner to the given value.
@@ -180,7 +180,7 @@ void tea5767_setStation(float freq);
 * @return bool The status of the device.
 * @note This function must be called before using any other function related to the TEA5757 tuner.
 */
-bool tea5767_getReady();
+bool tea5767_getReady(void);
 
 /*! @brief Configures the search mode and direction of the TEA5757 tuner.
 * This function sets the search mode and direction of the TEA5757 tuner. It updates the values of the TEA5757_t structure
@@ -217,14 +217,14 @@ void tea5767_setStationInc(float freq);
 * the audio output is muted.
 * @note The function _tea5767_write_registers() is called to write the new mute mode value to the tuner.
 */
-void tea5767_setMute();
+void tea5767_mute(void);
 
 /*! @brief Releases the mute mode of the TEA5757 tuner.
 * This function sets the mute mode of the TEA5757 tuner to the specified value. When mute mode is enabled,
 * the audio output is muted.
 * @note The function _tea5767_write_registers() is called to write the new mute mode value to the tuner.
 */
-void tea5767_unMute();
+void tea5767_unMute(void);
 
 /*! @brief Sets the soft mute mode of the TEA5767 radio.
 * This function sets the soft mute mode of the TEA5767 radio to either on or off.
@@ -233,33 +233,75 @@ void tea5767_unMute();
 * @return void
 * @note The soft mute mode reduces the hissing noise when tuning the radio but can also cause distortion in weak signals.
 */
-void tea5767_setSoftMute(bool mute);
+void tea5767_softMute(void);
+
+/*! @brief Sets the soft mute mode of the TEA5767 radio.
+* This function sets the soft mute mode of the TEA5767 radio to either on or off.
+* @param radio A pointer to a TEA5757_t struct representing the TEA5767 radio.
+* @param mute A boolean indicating whether the soft mute mode should be on (true) or off (false).
+* @return void
+* @note The soft mute mode reduces the hissing noise when tuning the radio but can also cause distortion in weak signals.
+*/
+void tea5767_unSoftMute(void);
 
 /*! @brief Sets the left channel mute mode for the TEA5767 radio.
 * @param radio Pointer to the TEA5757_t struct representing the radio.
 * @param mute Boolean value indicating whether the left channel should be muted.
 */
-void tea5767_setMuteLeft(bool mute);
+void tea5767_muteLeft(void);
+
+/*! @brief Sets the left channel mute mode for the TEA5767 radio.
+* @param radio Pointer to the TEA5757_t struct representing the radio.
+* @param mute Boolean value indicating whether the left channel should be muted.
+*/
+void tea5767_unMuteLeft(void);
 
 /*! @brief Sets the right channel mute mode for the TEA5767 radio.
 * @param radio Pointer to the TEA5757_t struct representing the radio.
 * @param mute Boolean value indicating whether the left channel should be muted.
 */
-void tea5767_setMuteRight(bool mute);
+void tea5767_muteRight(void);
+
+/*! @brief Sets the right channel mute mode for the TEA5767 radio.
+* @param radio Pointer to the TEA5757_t struct representing the radio.
+* @param mute Boolean value indicating whether the left channel should be muted.
+*/
+void tea5767_unMuteRight(void);
 
 /*! @brief Sets the standby mode of the TEA5757 radio.
 * This function sets the standby mode of the TEA5757 radio. When the radio is in standby mode, it consumes less power but cannot receive or transmit signals.
 * @param radio Pointer to the TEA5757_t structure.
 * @param standby Set to true to activate standby mode, false to deactivate it.
 */
-void tea5767_setStandby(bool standby);
+void tea5767_sleep(void);
+
+/*! @brief Sets the standby mode of the TEA5757 radio.
+* This function sets the standby mode of the TEA5757 radio. When the radio is in standby mode, it consumes less power but cannot receive or transmit signals.
+* @param radio Pointer to the TEA5757_t structure.
+* @param standby Set to true to activate standby mode, false to deactivate it.
+*/
+void tea5767_wakeUp(void);
 
 /*! @brief Sets the stereo mode of the TEA5757 radio.
 * This function sets the stereo mode of the TEA5757 radio. When the radio is in stereo mode, it receives stereo signals if available. When in mono mode, it receives only mono signals.
 * @param radio Pointer to the TEA5757_t structure.
 * @param stereo Set to true to activate stereo mode, false to activate mono mode.
 */
-void tea5767_setStereo(bool stereo);
+void tea5767_enableStereo(void);
+
+/*! @brief Sets the stereo mode of the TEA5757 radio.
+* This function sets the stereo mode of the TEA5757 radio. When the radio is in stereo mode, it receives stereo signals if available. When in mono mode, it receives only mono signals.
+* @param radio Pointer to the TEA5757_t structure.
+* @param stereo Set to true to activate stereo mode, false to activate mono mode.
+*/
+void tea5767_disableStereo(void);
+
+void tea5767_wakeUp(void);
+void tea5767_setSWPin1(bool pin1_state);
+void tea5767_setSWPin2(bool pin2_state);
+void tea5767_enableSearchIndicatorOnPin1(void);
+void tea5767_disableSearchIndicatorOnPin1(void);
+
 
 
 
