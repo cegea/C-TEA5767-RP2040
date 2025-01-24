@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
+uint8_t* get_i2c_buffer(void);
 void i2c_read_mockup(uint8_t address, uint8_t *buffer, uint8_t length);
 void i2c_write_mockup(uint8_t address, uint8_t *buffer, uint8_t length);
 
