@@ -16,20 +16,20 @@ void swap_array(uint8_t *array, size_t size)
 void test_mockup(void)
 {
     uint8_t buffer[6] = {0,1,2,3,4,5};
-    uint8_t buffer_incoming[sizeof(buffer)] = {0};
     i2c_write_mockup(0x00, buffer, sizeof(buffer));
 
-    i2c_read_mockup(0x00, buffer_incoming, sizeof(buffer));
+    uint8_t* write_buffer = get_i2c_buffer();
+
  
     for (int i = 0; i < sizeof(buffer); i++) { 
-        TEST_ASSERT(buffer[i] == buffer_incoming[i]);
+        TEST_ASSERT(buffer[i] == *(write_buffer + i));
     } 
 
     swap_array(buffer, sizeof(buffer));
     i2c_write_mockup(0x00, buffer, sizeof(buffer));
-    i2c_read_mockup(0x00, buffer_incoming, sizeof(buffer));
+    write_buffer = get_i2c_buffer();
     for (int i = 0; i < sizeof(buffer); i++) { 
-        TEST_ASSERT(buffer[i] == buffer_incoming[i]);
+        TEST_ASSERT(buffer[i] == *(write_buffer + i));
     } 
     
 }
