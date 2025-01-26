@@ -4,7 +4,7 @@
 #include <string.h> 
 #include <stdint.h> 
 
-#define DBG_LOG
+//#define DBG_LOG
 
 // This struct helps with the logic and data.
 typedef struct{
@@ -65,7 +65,7 @@ void i2c_read_mockup(uint8_t address, uint8_t *read_buffer, uint8_t length) {
     }
 
     // Map data from write buffer to read buffer
-    i2c_buffer[0] = simulated_tea5767.ready << 7; // Always ready
+    i2c_buffer[0] |= simulated_tea5767.ready << 7; // Always ready
     i2c_buffer[0] |= 0 << 6; // TODO: Logic to test band limits
     // PLL data is in the same position.
     i2c_buffer[2] = simulated_tea5767.stereo << 7;
