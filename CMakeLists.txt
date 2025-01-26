@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD 14)
 # BUILD_Target == 2 ==> test
 set(BUILD_TARGET 2)
 set(PICO_SDK_FETCH_FROM_GIT on)
-set(PICO_SDK_FETCH_FROM_GIT_TAG 1.5.1) 
+set(PICO_SDK_FETCH_FROM_GIT_TAG 1.5.1)
 
 if(BUILD_TARGET EQUAL 0)
     include(pico_sdk_import.cmake)
@@ -37,15 +37,14 @@ if(BUILD_TARGET EQUAL 0)
 endif()
 
 if(BUILD_TARGET EQUAL 2)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     enable_testing()
     # Testing framework
     add_subdirectory(test)
     # UUT
     add_definitions(-DUNIT_TESTING)
     add_subdirectory(tea5767_i2c) # Will add the library tea5767_i2c
-    # Uniti does not have a CMakeLists.txt to build tests. 
-    add_library(unity STATIC Unity/src/unity.c)   
+    # Uniti does not have a CMakeLists.txt to build tests.
+    add_library(unity STATIC Unity/src/unity.c)
     target_include_directories(unity PUBLIC Unity/src)
 endif()
-
-
