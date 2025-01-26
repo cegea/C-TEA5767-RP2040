@@ -42,11 +42,13 @@ void test_TEA5767_getStation(void)
     for (float freq = MIN_FREQ_EU; freq < MAX_FREQ_EU; freq++)
     {
         tea5767_setStation(freq);
-        printf("Current frequency %.3f \n",freq);
+        printf("Requested frequency %.3f \n",freq);
         printf("Current frequency %.3f \n",tea5767_getStation());
         // Compare as unsigned int due to float math
         TEST_ASSERT((uint32_t)tea5767_getStation() == (uint32_t)freq);
     }
+
+
 }
 
 void test_TEA5767_getReady(void)

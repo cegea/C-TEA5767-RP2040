@@ -12,6 +12,8 @@
  ************************************/
 #include "tea5767_i2c.h"
 #include <stdbool.h>
+#include <math.h>
+#include <stdint.h>
 
 /************************************
  * EXTERN VARIABLES
@@ -90,8 +92,8 @@ void _tea5767_read_registers() {
 #endif
   _radio->read.ready = registers[0] >> 7;
   _radio->read.bandLimitsFlag = registers[0] >> 6;
-  _radio->read.pll =
-      ((uint16_t)(registers[0] & 0x3f) << 8) + (uint16_t)registers[1];
+  _radio->read.pll =((uint16_t)(registers[0] & 0x3f) << 8);
+  _radio->read.pll += (uint16_t)registers[1];
   _radio->read.stereo = registers[2] >> 7;
   _radio->read.ifCounter = registers[2] & 0x7f;
   _radio->read.adcLevelOutput = registers[3] >> 4;
@@ -108,7 +110,7 @@ void _tea5767_write_registers() {
   // the fixed offset of 225kHz and the 4:1 prescaler used by the TEA5767
   // module.
   float freq = 4.0 * (_radio->frequency * 1000000.0 + 225000.0) / 32768.0;
-  uint16_t integer_freq = freq;
+  uint16_t integer_freq = (uint16_t)round(freq);
   registers[0] = (uint8_t)(integer_freq >> 8) | _radio->write.mute << 7 |
                  _radio->write.searchModeEnabled << 6;
   registers[1] = (uint8_t)(integer_freq & 0xff);
