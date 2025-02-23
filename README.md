@@ -11,7 +11,7 @@ Not necessary but it helps with `IntelliSense`.
 #### Debian / Ubuntu
 
 ```bash
-sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib bear
 ```
 
 #### Fedora
@@ -33,3 +33,11 @@ cd build
 cmake ..
 make
 ```
+
+## Build compile db
+```bash
+cd build
+cmake ..
+bear -- make
+```
+
